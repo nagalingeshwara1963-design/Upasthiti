@@ -27,5 +27,5 @@ RUN python setup_models.py || true
 # Expose standard web port
 EXPOSE 7860
 
-# Launch FastAPI web application
-CMD ["uvicorn", "app.web.server:app", "--host", "0.0.0.0", "--port", "7860"]
+# Launch FastAPI web application with dynamic port support (Render $PORT or default 7860)
+CMD ["sh", "-c", "uvicorn app.web.server:app --host 0.0.0.0 --port ${PORT:-7860}"]

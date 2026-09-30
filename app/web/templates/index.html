@@ -3,282 +3,856 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Upasthiti — Face Recognition Attendance System</title>
-  <meta name="description" content="AI-powered automated face-recognition attendance management system for classrooms and educational institutions.">
-  <link rel="stylesheet" href="/static/css/style.css">
+  <title>Upasthiti — Face Recognition Attendance</title>
+  <meta name="description" content="Faithful browser edition of Upasthiti automated face-recognition attendance system for classrooms and institutions.">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
 
-  <!-- Top Navigation Header -->
-  <header class="app-header">
-    <div class="brand">
-      <div class="brand-icon">🎓</div>
-      <div>
-        <div class="brand-title">Upasthiti</div>
-        <div style="font-size: 0.75rem; color: var(--text-dim);">Automated Classroom Attendance</div>
+  <!-- ================= 1. LOGIN SCREEN ================= -->
+  <div id="login-container" class="login-wrap" style="display: flex;">
+    <div class="login-card">
+      <div class="login-title">👁 Upasthiti</div>
+      <div class="login-sub">Face Recognition Attendance</div>
+
+      <div class="form-group" style="text-align: left;">
+        <label class="form-label" for="login-role">Role</label>
+        <select id="login-role" class="form-control" style="background-color: var(--blue); color: white; font-weight: 600;">
+          <option value="Admin">Admin</option>
+          <option value="Faculty">Faculty</option>
+          <option value="Student">Student</option>
+          <option value="Maintenance">Maintenance</option>
+        </select>
       </div>
-      <span class="brand-tag">Online Web Edition</span>
-    </div>
 
-    <!-- Navigation Tabs -->
-    <nav class="nav-tabs" aria-label="Main Navigation">
-      <button class="nav-tab-btn active" data-tab="tab-attendance" id="nav-btn-attendance">
-        📸 Take Attendance
-      </button>
-      <button class="nav-tab-btn" data-tab="tab-classes" id="nav-btn-classes">
-        👥 Classes & Students
-      </button>
-      <button class="nav-tab-btn" data-tab="tab-reports" id="nav-btn-reports">
-        📊 Reports & History
-      </button>
-    </nav>
-
-    <!-- System Status Indicator -->
-    <div class="status-pill" id="system-status-indicator">
-      <span class="status-dot"></span>
-      <span id="system-status-text">AI Ready</span>
-    </div>
-  </header>
-
-  <!-- Main Content Wrapper -->
-  <main class="main-wrapper">
-
-    <!-- ================= 1. TAKE ATTENDANCE SECTION ================= -->
-    <section class="tab-section active" id="tab-attendance">
-      <div class="grid-cols-2">
-        
-        <!-- Left Column: Session Configuration & Capture -->
-        <div class="glass-card">
-          <h2 style="font-size: 1.3rem; margin-bottom: 1.25rem; font-weight: 700;">1. Classroom & Photo Setup</h2>
-          
-          <div class="form-group">
-            <label class="form-label" for="class-select">Select Class / Roster *</label>
-            <select class="form-select" id="class-select">
-              <option value="">-- Loading Classes... --</option>
-            </select>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label class="form-label" for="session-subject">Subject</label>
-              <input type="text" class="form-control" id="session-subject" placeholder="e.g. Machine Learning" value="General">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="session-faculty">Faculty Name</label>
-              <input type="text" class="form-control" id="session-faculty" placeholder="e.g. Prof. Rao" value="Faculty">
-            </div>
-          </div>
-
-          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
-            <div class="form-group">
-              <label class="form-label" for="session-period">Period / Hour</label>
-              <input type="text" class="form-control" id="session-period" value="1">
-            </div>
-            <div class="form-group">
-              <label class="form-label" for="accuracy-mode">Recognition Accuracy</label>
-              <select class="form-select" id="accuracy-mode">
-                <option value="balanced" selected>Balanced (Recommended)</option>
-                <option value="strict">Strict (High Confidence)</option>
-                <option value="fast">Fast (Large Classrooms)</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Camera / Photo Upload Zone -->
-          <div class="form-group" style="margin-top: 1rem;">
-            <label class="form-label">Classroom Photo Source</label>
-            <div class="capture-box" id="drop-zone" onclick="document.getElementById('photo-file-input').click()">
-              <input type="file" id="photo-file-input" accept="image/*" style="display: none;">
-              
-              <div id="upload-placeholder">
-                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📁</div>
-                <div style="font-weight: 600; color: var(--text-main);">Click to Browse or Drag Photo Here</div>
-                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem;">Supports JPG, PNG, WEBP (from camera or phone)</div>
-              </div>
-
-              <!-- Live Webcam Stream View -->
-              <video id="webcam-video" autoplay playsinline class="preview-media" style="display: none;"></video>
-              <!-- Selected/Snapped Preview -->
-              <img id="preview-image" class="preview-media" alt="Classroom Preview" style="display: none;">
-              <canvas id="capture-canvas" style="display: none;"></canvas>
-            </div>
-          </div>
-
-          <!-- Action Buttons -->
-          <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
-            <button type="button" class="btn btn-outline" id="start-camera-btn">
-              📷 Open Camera
-            </button>
-            <button type="button" class="btn btn-outline" id="snap-btn" style="display: none;">
-              ⚡ Snap Photo
-            </button>
-            <button type="button" class="btn btn-primary" id="process-btn" style="flex: 1;">
-              <span class="spinner" id="process-spinner" style="display: none;"></span>
-              <span>🔍 Run AI Recognition</span>
-            </button>
-          </div>
+      <!-- Staff Inputs -->
+      <div id="login-staff-fields">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-user">Username</label>
+          <input type="text" id="login-user" class="form-control" value="admin">
         </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-pw">Password</label>
+          <input type="password" id="login-pw" class="form-control" placeholder="Enter password">
+        </div>
+      </div>
 
-        <!-- Right Column: Recognition Preview & Review List -->
-        <div class="glass-card" id="results-container" style="display: none;">
-          <div class="results-header">
-            <div>
-              <h2 style="font-size: 1.25rem; font-weight: 700;">2. Attendance Results</h2>
-              <p style="font-size: 0.85rem; color: var(--text-dim);">Verify detected faces and click status to toggle</p>
-            </div>
-            <div style="display: flex; gap: 0.5rem;">
-              <span class="stat-badge badge-present">Present: <strong id="stat-present">0</strong></span>
-              <span class="stat-badge badge-absent">Absent: <strong id="stat-absent">0</strong></span>
-            </div>
-          </div>
+      <!-- Student Inputs -->
+      <div id="login-student-fields" style="display: none;">
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-student-name">Student Full Name</label>
+          <input type="text" id="login-student-name" class="form-control" placeholder="e.g. John Doe">
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-student-code">Student ID</label>
+          <input type="text" id="login-student-code" class="form-control" placeholder="e.g. 3106_01">
+        </div>
+        <div class="form-group" style="text-align: left;">
+          <label class="form-label" for="login-student-pw">Password (first login: Student ID)</label>
+          <input type="password" id="login-student-pw" class="form-control" placeholder="Enter password">
+        </div>
+      </div>
 
-          <!-- Annotated Image with Bounding Boxes -->
-          <div style="margin-bottom: 1.5rem; text-align: center;">
-            <img id="boxed-result-image" class="preview-media" alt="Detected Faces" style="border: 1px solid var(--card-border);">
-            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.4rem;">
-              Detected <span id="stat-detected" style="color: var(--primary); font-weight: bold;">0</span> faces in group photo
-            </div>
-          </div>
+      <div id="login-error-msg" style="color: var(--red); font-size: 12px; font-weight: 600; min-height: 20px; margin-bottom: 12px;"></div>
 
-          <!-- Attendance Decision Roster -->
-          <div style="max-height: 280px; overflow-y: auto; margin-bottom: 1.5rem;">
-            <table class="attendance-table">
-              <thead>
-                <tr>
-                  <th>Roll / Code</th>
-                  <th>Student Name</th>
-                  <th>Decision</th>
-                  <th>Confidence</th>
-                </tr>
-              </thead>
-              <tbody id="attendance-table-body">
-                <!-- Dynamically populated -->
-              </tbody>
-            </table>
-          </div>
+      <button id="btn-do-login" class="btn btn-primary" style="width: 100%; height: 44px; font-size: 14px; margin-bottom: 14px;">
+        Sign In
+      </button>
 
-          <!-- Save to Database Button -->
-          <button type="button" class="btn btn-success" id="save-session-btn" style="width: 100%;">
-            💾 Confirm & Save to Database
+      <button id="btn-enter-demo" class="btn btn-secondary" style="width: 100%; height: 38px;">
+        Explore isolated Demo Mode
+      </button>
+    </div>
+  </div>
+
+
+  <!-- ================= 2. MAIN APPLICATION SHELL ================= -->
+  <div id="app-shell" class="app-container" style="display: none;">
+
+    <!-- Left Sidebar Navigation -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-logo">👁 Upasthiti</div>
+        <div class="sidebar-tagline">AI-Powered Attendance</div>
+      </div>
+
+      <!-- Staff Navigation Items -->
+      <nav class="sidebar-nav" id="staff-nav-list">
+        <button class="nav-item active" data-page="home"><span class="nav-icon">🏠</span> Home</button>
+        <button class="nav-item" data-page="enroll"><span class="nav-icon">🧑‍🎓</span> Enroll</button>
+        <button class="nav-item" data-page="photos"><span class="nav-icon">📷</span> Group Photos</button>
+        <button class="nav-item" data-page="attendance"><span class="nav-icon">✅</span> Attendance</button>
+        <button class="nav-item" data-page="reports"><span class="nav-icon">📊</span> Reports</button>
+        <button class="nav-item" data-page="email_center"><span class="nav-icon">✉️</span> Email Center</button>
+        <button class="nav-item" data-page="recovery"><span class="nav-icon">🔄</span> Recovery</button>
+        <button class="nav-item" data-page="reviews"><span class="nav-icon">📋</span> Review Requests</button>
+        <button class="nav-item admin-only" data-page="settings"><span class="nav-icon">⚙️</span> Settings</button>
+        <button class="nav-item admin-only" data-page="models"><span class="nav-icon">🧠</span> Models & Licences</button>
+        <button class="nav-item" data-page="help"><span class="nav-icon">❓</span> Help</button>
+      </nav>
+
+      <!-- Student Dedicated Navigation Items -->
+      <nav class="sidebar-nav" id="student-nav-list" style="display: none;">
+        <button class="nav-item active" data-page="student-portal"><span class="nav-icon">🎓</span> Student Portal</button>
+        <button class="nav-item" data-page="student-history"><span class="nav-icon">📊</span> My Attendance</button>
+        <button class="nav-item" data-page="student-reviews"><span class="nav-icon">📋</span> My Requests</button>
+        <button class="nav-item" data-page="student-chat"><span class="nav-icon">💬</span> Assistant</button>
+      </nav>
+
+      <!-- Sidebar Footer -->
+      <div class="sidebar-footer">
+        <div id="demo-indicator" style="display: none;">
+          <button id="btn-exit-demo" class="btn btn-danger-lt" style="width: 100%; font-size: 11px;">
+            Exit Demo Mode
           </button>
         </div>
 
-      </div>
-    </section>
+        <div style="display: flex; flex-direction: column; gap: 4px;">
+          <span style="font-size: 11px; color: #90CAF9; font-weight: 500;">Language</span>
+          <select id="lang-select" class="lang-selector">
+            <option value="en" selected>English</option>
+            <option value="kn">ಕನ್ನಡ (Kannada)</option>
+            <option value="hi">हिन्दी (Hindi)</option>
+          </select>
+        </div>
 
-    <!-- ================= 2. CLASSES & STUDENTS SECTION ================= -->
-    <section class="tab-section" id="tab-classes">
-      <div style="display: grid; grid-template-columns: 360px 1fr; gap: 1.75rem;">
-        
-        <!-- Add Class Form -->
-        <div class="glass-card">
-          <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; font-weight: 700;">Add New Class</h2>
-          <form id="create-class-form">
-            <div class="form-group">
-              <label class="form-label" for="new-class-name">Class / Batch Name *</label>
-              <input type="text" class="form-control" id="new-class-name" required placeholder="e.g. CSE-2026-A">
+        <div class="user-badge">
+          <span id="user-display-badge" class="user-role-text">👤 admin (admin)</span>
+          <button id="btn-do-logout" class="logout-link">Logout</button>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right Main Workspace -->
+    <div class="app-main">
+
+      <!-- Top Action Bar -->
+      <header class="app-topbar">
+        <div class="topbar-left">
+          <button id="mobile-toggle-btn" class="mobile-menu-btn">☰</button>
+          <h1 id="current-page-title" class="page-title">Home</h1>
+        </div>
+
+        <div class="topbar-right">
+          <!-- Class Selector -->
+          <div id="class-selector-wrapper" class="class-select-group">
+            <label class="class-select-label" for="active-class-select">Class:</label>
+            <select id="active-class-select" class="class-dropdown">
+              <option value="">(No assigned classes)</option>
+            </select>
+          </div>
+
+          <!-- New Class Button (Admin only) -->
+          <button id="btn-open-new-class-modal" class="btn-new-class admin-only">+ New Class</button>
+        </div>
+      </header>
+
+      <!-- Scrollable Main View Area -->
+      <main class="app-content">
+
+        <!-- ================= PAGE: HOME ================= -->
+        <section id="view-home" class="page-view">
+          <!-- Onboarding Checklist -->
+          <div id="onboarding-card" class="card" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <h2 class="card-title" style="margin-bottom: 0;">Getting Started</h2>
+              <button id="btn-dismiss-onboarding" class="btn btn-secondary btn-sm">Hide</button>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="new-class-branch">Branch / Department</label>
-              <input type="text" class="form-control" id="new-class-branch" placeholder="e.g. Computer Science">
+            <div style="font-size: 13px; line-height: 1.8;">
+              <div><span id="step-admin-icon" style="color: var(--green);">✔</span> Admin password configured</div>
+              <div><span id="step-class-icon" style="color: var(--grey);">☐</span> Create your first class roster</div>
+              <div><span id="step-enroll-icon" style="color: var(--grey);">☐</span> Enroll student facial photos</div>
+              <div><span id="step-attend-icon" style="color: var(--grey);">☐</span> Run and save your first attendance session</div>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="new-class-year">Academic Year</label>
-              <input type="text" class="form-control" id="new-class-year" placeholder="e.g. 4th Year">
+          </div>
+
+          <!-- Stat Cards -->
+          <div class="grid-4" style="margin-bottom: 16px;">
+            <div class="stat-box">
+              <div class="stat-val" id="stat-students" style="color: var(--blue);">0</div>
+              <div class="stat-label">Students in class</div>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="new-class-section">Section</label>
-              <input type="text" class="form-control" id="new-class-section" placeholder="e.g. A">
+            <div class="stat-box">
+              <div class="stat-val" id="stat-sessions-today" style="color: var(--blue);">0</div>
+              <div class="stat-label">Sessions today</div>
             </div>
-            <div class="form-group">
-              <label class="form-label" for="new-class-college">College / Institution</label>
-              <input type="text" class="form-control" id="new-class-college" placeholder="e.g. Engineering College">
+            <div class="stat-box">
+              <div class="stat-val" id="stat-today-pct" style="color: var(--green);">-</div>
+              <div class="stat-label">Today's attendance</div>
             </div>
-            <button type="submit" class="btn btn-primary" style="width: 100%;">
-              ➕ Create Class
+            <div class="stat-box">
+              <div class="stat-val" id="stat-low-count" style="color: var(--green);">0</div>
+              <div class="stat-label">Below 75% this month</div>
+            </div>
+          </div>
+
+          <!-- Quick Actions Grid -->
+          <div class="grid-3" style="margin-bottom: 16px;">
+            <button class="btn btn-secondary" onclick="navigatePage('attendance')" style="height: 48px; background: white; border: 1px solid var(--border);">
+              ✅ Take Attendance
             </button>
-          </form>
-        </div>
-
-        <!-- Class Cards Grid -->
-        <div>
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
-            <h2 style="font-size: 1.3rem; font-weight: 700;">Active Classes & Rosters</h2>
+            <button class="btn btn-secondary" onclick="navigatePage('photos')" style="height: 48px; background: white; border: 1px solid var(--border);">
+              📷 Add Group Photos
+            </button>
+            <button class="btn btn-secondary" id="btn-quick-phone" style="height: 48px; background: white; border: 1px solid var(--border);">
+              📱 Upload from Phone
+            </button>
+            <button class="btn btn-secondary" onclick="navigatePage('enroll')" style="height: 48px; background: white; border: 1px solid var(--border);">
+              🧑‍🎓 Enroll Student
+            </button>
+            <button class="btn btn-secondary" onclick="navigatePage('enroll')" style="height: 48px; background: white; border: 1px solid var(--border);">
+              👥 Manage Students
+            </button>
+            <button class="btn btn-secondary" onclick="navigatePage('reports')" style="height: 48px; background: white; border: 1px solid var(--border);">
+              📊 View Reports
+            </button>
           </div>
-          <div class="grid-cols-2" id="classes-list">
-            <!-- Dynamically populated -->
-          </div>
-        </div>
 
-      </div>
-
-      <!-- Class Roster Modal -->
-      <div id="roster-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; backdrop-filter: blur(8px); padding: 2rem;">
-        <div class="glass-card" style="max-width: 800px; margin: 2rem auto; max-height: 85vh; overflow-y: auto;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-            <div>
-              <h2 style="font-size: 1.3rem; font-weight: 700;" id="roster-class-name">Class Roster</h2>
-              <span style="font-size: 0.85rem; color: var(--text-dim);">Manage students and upload enrollment face photos</span>
+          <!-- Today's Classes & Recent Sessions -->
+          <div class="grid-2">
+            <div class="card">
+              <h2 class="card-title">Today's Classes</h2>
+              <div id="home-today-sessions-list">
+                <div style="color: var(--grey); font-size: 13px;">No attendance recorded today for this class.</div>
+              </div>
             </div>
-            <button class="btn btn-outline" id="close-roster-modal" style="padding: 0.4rem 0.8rem;">✕ Close</button>
+            <div class="card">
+              <h2 class="card-title">Attendance Alerts</h2>
+              <div id="home-alerts-list">
+                <div style="color: var(--green); font-size: 13px;">All students meet or exceed attendance targets!</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: ENROLL ================= -->
+        <section id="view-enroll" class="page-view" style="display: none;">
+          <div class="grid-2">
+            <!-- Left: Add Student Form -->
+            <div class="card">
+              <h2 class="card-title">Add & Enroll Student</h2>
+              <div class="form-group">
+                <label class="form-label" for="enroll-code">Student ID / Roll No *</label>
+                <input type="text" id="enroll-code" class="form-control" placeholder="e.g. 3106_2023_01">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="enroll-name">Student Full Name *</label>
+                <input type="text" id="enroll-name" class="form-control" placeholder="e.g. Anand Kumar">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="enroll-email">Student Email (Optional)</label>
+                <input type="email" id="enroll-email" class="form-control" placeholder="anand@example.com (can be skipped)">
+              </div>
+
+              <!-- Photo Capture / Upload -->
+              <div class="form-group">
+                <label class="form-label">Frontal Enrollment Photo</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 10px;">
+                  <button id="btn-enroll-browse" class="btn btn-secondary btn-sm">📁 Choose Photo</button>
+                  <button id="btn-enroll-camera" class="btn btn-secondary btn-sm">📷 Use Camera</button>
+                  <input type="file" id="enroll-file-input" accept="image/*" style="display: none;">
+                </div>
+
+                <div id="enroll-preview-box" style="border: 2px dashed var(--border); border-radius: var(--radius-md); padding: 12px; text-align: center; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; background: #FBFDFE;">
+                  <img id="enroll-preview-img" style="max-height: 160px; max-width: 100%; border-radius: var(--radius-sm); display: none;">
+                  <video id="enroll-webcam-video" style="max-height: 160px; max-width: 100%; border-radius: var(--radius-sm); display: none;" autoplay playsinline></video>
+                  <button id="btn-enroll-snap" class="btn btn-success btn-sm" style="display: none; margin-top: 8px;">Capture Photo</button>
+                  <div id="enroll-preview-hint" style="color: var(--grey); font-size: 12px;">No photo selected. Please choose a clear frontal image.</div>
+                </div>
+              </div>
+
+              <div id="enroll-status-msg" style="font-size: 12px; font-weight: 600; min-height: 20px; margin-bottom: 10px;"></div>
+
+              <button id="btn-save-student" class="btn btn-success" style="width: 100%; height: 42px;">
+                Save Enrolled Student
+              </button>
+            </div>
+
+            <!-- Right: Manage Enrolled Students -->
+            <div class="card">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                <h2 class="card-title" style="margin-bottom: 0;">Enrolled Students</h2>
+                <button id="btn-open-rebuild-gallery" class="btn btn-secondary btn-sm">Rebuild Gallery</button>
+              </div>
+              <div class="table-wrapper" style="max-height: 480px;">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Student ID</th>
+                      <th>Name</th>
+                      <th>Faces</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="enrolled-students-tbody">
+                    <tr><td colspan="4" style="text-align: center; color: var(--grey);">Loading enrolled students...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: GROUP PHOTOS ================= -->
+        <section id="view-photos" class="page-view" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <button id="btn-group-browse" class="btn btn-primary">🖼 Browse Photos</button>
+                <input type="file" id="group-file-input" accept="image/*" multiple style="display: none;">
+                <button id="btn-group-phone" class="btn btn-secondary">📱 Upload from Phone</button>
+                <button id="btn-group-camera" class="btn btn-secondary">📷 Webcam</button>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text); cursor: pointer; margin-left: 10px;">
+                  <input type="checkbox" id="check-auto-enhance" checked> Auto-enhance lighting
+                </label>
+              </div>
+              <button id="btn-clear-staged" class="btn btn-danger-lt btn-sm">Clear All</button>
+            </div>
           </div>
 
-          <!-- Add Student Inline Form -->
-          <form id="add-student-form" style="display: grid; grid-template-columns: 140px 1fr auto; gap: 0.75rem; margin-bottom: 1.5rem; background: rgba(15,23,42,0.6); padding: 1rem; border-radius: var(--radius-md);">
-            <input type="hidden" id="roster-class-id">
-            <input type="text" class="form-control" id="new-student-code" placeholder="Roll No (e.g. 101)" required>
-            <input type="text" class="form-control" id="new-student-name" placeholder="Full Student Name" required>
-            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">➕ Add Student</button>
-          </form>
+          <!-- Staged Photos Grid -->
+          <div class="card" style="min-height: 300px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <h2 class="card-title" style="margin-bottom: 0;">Staged Classroom Photos</h2>
+              <span id="staged-count-badge" class="badge badge-neutral">0 photos ready</span>
+            </div>
 
-          <!-- Student Roster Table -->
-          <table class="attendance-table">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Name</th>
-                <th>Enrolled Faces</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody id="roster-table-body">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
+            <div id="staged-photos-container" class="staged-grid">
+              <div style="grid-column: 1 / -1; text-align: center; color: var(--grey); padding: 40px 0;">
+                No group photos staged yet. Add photos from your computer or scan with phone.
+              </div>
+            </div>
 
-    <!-- ================= 3. REPORTS & HISTORY SECTION ================= -->
-    <section class="tab-section" id="tab-reports">
-      <div class="glass-card">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-          <div>
-            <h2 style="font-size: 1.3rem; font-weight: 700;">Recorded Attendance Sessions</h2>
-            <p style="font-size: 0.85rem; color: var(--text-dim);">Real-time historical session logs stored in local SQLite database</p>
+            <div style="margin-top: 24px; display: flex; justify-content: flex-end;">
+              <button class="btn btn-success btn-lg" onclick="navigatePage('attendance')">
+                Continue to Attendance ▶
+              </button>
+            </div>
           </div>
-        </div>
+        </section>
 
-        <table class="attendance-table">
-          <thead>
-            <tr>
-              <th>Date</th>
-              <th>Time</th>
-              <th>Class</th>
-              <th>Subject</th>
-              <th>Faculty</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="reports-table-body">
-            <!-- Dynamically populated -->
-          </tbody>
-        </table>
+
+        <!-- ================= PAGE: ATTENDANCE ================= -->
+        <section id="view-attendance" class="page-view" style="display: none;">
+          <div class="grid-2">
+            <!-- Left: Session Details Card -->
+            <div class="card" style="align-self: start;">
+              <h2 class="card-title">Session Details</h2>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                  <label class="form-label" for="session-date">Date</label>
+                  <input type="date" id="session-date" class="form-control">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="session-time">Time</label>
+                  <input type="time" id="session-time" class="form-control">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="session-subject">Subject</label>
+                <input type="text" id="session-subject" class="form-control" placeholder="e.g. Data Structures">
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                  <label class="form-label" for="session-faculty">Faculty</label>
+                  <input type="text" id="session-faculty" class="form-control" value="Faculty">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="session-period">Period / Hour</label>
+                  <input type="text" id="session-period" class="form-control" value="1">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="session-accuracy-mode">Recognition Accuracy</label>
+                <select id="session-accuracy-mode" class="form-control" style="background: var(--blue); color: white; font-weight: 600;">
+                  <option value="balanced" selected>Balanced</option>
+                  <option value="max">Maximum Accuracy</option>
+                  <option value="fast">Fast</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; cursor: pointer;">
+                  <input type="checkbox" id="check-auto-threshold" checked> Automatic threshold
+                </label>
+                <input type="range" id="threshold-slider" min="0.40" max="0.80" step="0.01" value="0.60" class="form-control" style="padding: 0; margin-top: 6px;" disabled>
+                <div id="threshold-hint-lbl" style="font-size: 11px; color: var(--grey); margin-top: 3px;">
+                  Suggested threshold 0.60 — Automatic
+                </div>
+              </div>
+
+              <div id="attendance-photo-hint" style="color: var(--amber); font-size: 12px; margin-bottom: 12px; font-weight: 600;">
+                ⚠ Add group photos in Group Photos tab first
+              </div>
+
+              <button id="btn-run-attendance" class="btn btn-success btn-lg" style="width: 100%; height: 48px;">
+                ▶ Run Attendance
+              </button>
+            </div>
+
+            <!-- Right: Preview & Live Recognition Console -->
+            <div style="display: flex; flex-direction: column; gap: 14px;">
+              <div class="card" style="min-height: 280px; display: flex; align-items: center; justify-content: center; background: #FAFBFD;">
+                <img id="attendance-preview-img" style="max-height: 280px; max-width: 100%; border-radius: var(--radius-sm); display: none;">
+                <div id="attendance-preview-placeholder" style="color: var(--grey); font-size: 13px; text-align: center;">
+                  Recognition preview and bounding box overlays will appear here once executed.
+                </div>
+              </div>
+
+              <div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                  <span id="attendance-stage-lbl" style="font-size: 13px; font-weight: 700; color: var(--blue);">Ready</span>
+                  <span id="attendance-pct-lbl" style="font-size: 12px; color: var(--grey);"></span>
+                </div>
+                <div class="console-box" id="attendance-log-box">Ready to process staged classroom group photos.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: REPORTS ================= -->
+        <section id="view-reports" class="page-view" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div style="display: flex; gap: 10px; align-items: center;">
+                <span class="card-title" style="margin-bottom: 0;">Attendance Sessions</span>
+              </div>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-export-csv" class="btn btn-secondary btn-sm">📥 Export Class CSV</button>
+                <button id="btn-export-audit" class="btn btn-secondary btn-sm admin-only">📥 Export Audit Log</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Period</th>
+                    <th>Faculty</th>
+                    <th>Attendance</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reports-sessions-tbody">
+                  <tr><td colspan="7" style="text-align: center; color: var(--grey);">Loading attendance sessions...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: EMAIL CENTER ================= -->
+        <section id="view-email_center" class="page-view" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <h2 class="card-title" style="margin-bottom: 2px;">Email Center</h2>
+                <div class="card-subtitle">Send personalized student attendance summaries & automated absence alerts.</div>
+              </div>
+              <div style="display: flex; gap: 8px; align-items: center;">
+                <label class="form-label" style="margin: 0;">Date Range:</label>
+                <input type="date" id="email-from-date" class="form-control" style="width: 140px;">
+                <span>to</span>
+                <input type="date" id="email-to-date" class="form-control" style="width: 140px;">
+                <button id="btn-email-preview-selected" class="btn btn-secondary btn-sm">👁 Preview</button>
+                <button id="btn-email-send-selected" class="btn btn-primary btn-sm">✉️ Send Selected</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th style="width: 40px;"><input type="checkbox" id="email-select-all"></th>
+                    <th>Student ID</th>
+                    <th>Name</th>
+                    <th>Email Recipients</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="email-recipients-tbody">
+                  <tr><td colspan="5" style="text-align: center; color: var(--grey);">Loading student recipients...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Recent Delivery History</h2>
+            <div class="table-wrapper" style="max-height: 240px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Recipient</th>
+                    <th>Student</th>
+                    <th>Kind</th>
+                    <th>Status</th>
+                    <th>Date / Time</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="email-history-tbody">
+                  <tr><td colspan="6" style="text-align: center; color: var(--grey);">No deliveries sent yet.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: RECOVERY ASSISTANT ================= -->
+        <section id="view-recovery" class="page-view" style="display: none;">
+          <div class="grid-2">
+            <!-- Left: Calculator -->
+            <div class="card">
+              <h2 class="card-title">Attendance Recovery Calculator</h2>
+              <div class="card-subtitle">Deterministic attendance calculation based on institutional policy.</div>
+
+              <div class="form-group">
+                <label class="form-label" for="recovery-attended">Classes Attended</label>
+                <input type="number" id="recovery-attended" class="form-control" value="18" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="recovery-absent">Classes Absent</label>
+                <input type="number" id="recovery-absent" class="form-control" value="8" min="0">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="recovery-target">Target Percentage (%)</label>
+                <input type="number" id="recovery-target" class="form-control" value="75" min="1" max="100">
+              </div>
+
+              <button id="btn-calc-recovery" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
+                Calculate Recovery
+              </button>
+            </div>
+
+            <!-- Right: Results Card -->
+            <div class="card">
+              <h2 class="card-title">Analysis & Guidance</h2>
+              <div id="recovery-results-box" style="font-size: 13px; line-height: 1.8;">
+                <div style="color: var(--grey);">Click Calculate Recovery to view classes needed or safe to miss.</div>
+              </div>
+
+              <div style="margin-top: 20px; border-top: 1px solid var(--border); padding-top: 14px;">
+                <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 8px;">Ask Local Assistant</h3>
+                <div style="display: flex; gap: 8px;">
+                  <input type="text" id="assistant-question-input" class="form-control" placeholder="e.g. Can I miss 2 classes?">
+                  <button id="btn-ask-assistant" class="btn btn-secondary">Ask</button>
+                </div>
+                <div id="assistant-answer-box" style="margin-top: 8px; font-size: 12px; color: var(--blue-dk); font-weight: 500; min-height: 24px;"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: REVIEW REQUESTS ================= -->
+        <section id="view-reviews" class="page-view" style="display: none;">
+          <div class="card">
+            <h2 class="card-title">Student Review Requests</h2>
+            <div class="card-subtitle">Review attendance mismatch claims submitted by students within the 30-day window.</div>
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Req ID</th>
+                    <th>Student ID</th>
+                    <th>Date</th>
+                    <th>Subject</th>
+                    <th>Original Status</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="reviews-queue-tbody">
+                  <tr><td colspan="8" style="text-align: center; color: var(--grey);">No review requests pending.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: SETTINGS ================= -->
+        <section id="view-settings" class="page-view admin-only" style="display: none;">
+          <div class="grid-2">
+            <div class="card">
+              <h2 class="card-title">Academic & Recognition Thresholds</h2>
+              <div class="form-group">
+                <label class="form-label" for="setting-warn">Warning Threshold (%)</label>
+                <input type="number" id="setting-warn" class="form-control" value="85">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="setting-critical">Critical Minimum Threshold (%)</label>
+                <input type="number" id="setting-critical" class="form-control" value="75">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="setting-default-mode">Default Accuracy Mode</label>
+                <select id="setting-default-mode" class="form-control">
+                  <option value="balanced" selected>Balanced (Standard)</option>
+                  <option value="max">Maximum Accuracy</option>
+                  <option value="fast">Fast</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="card">
+              <h2 class="card-title">Email Sender Configuration (SMTP)</h2>
+              <div class="form-group">
+                <label class="form-label" for="setting-sender-email">Sender Email</label>
+                <input type="email" id="setting-sender-email" class="form-control" placeholder="notifications@institution.edu">
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="setting-smtp-host">SMTP Server</label>
+                <input type="text" id="setting-smtp-host" class="form-control" value="smtp.gmail.com">
+              </div>
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-group">
+                  <label class="form-label" for="setting-smtp-port">Port</label>
+                  <input type="number" id="setting-smtp-port" class="form-control" value="587">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="setting-smtp-user">Username</label>
+                  <input type="text" id="setting-smtp-user" class="form-control" placeholder="user@gmail.com">
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="setting-smtp-pw">App Password (never revealed)</label>
+                <input type="password" id="setting-smtp-pw" class="form-control" placeholder="Enter App Password">
+              </div>
+              <button id="btn-save-settings" class="btn btn-primary" style="width: 100%;">Save Settings</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">Backup & Disaster Recovery</h2>
+            <div class="card-subtitle">Verified backup includes SQLite database, enrollment photos, and attendance galleries.</div>
+            <div style="display: flex; gap: 10px;">
+              <button id="btn-create-backup" class="btn btn-secondary">💾 Create Backup Archive (.zip)</button>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: MODELS & LICENCES ================= -->
+        <section id="view-models" class="page-view admin-only" style="display: none;">
+          <div class="card">
+            <h2 class="card-title">Face Recognition AI Models</h2>
+            <div style="font-size: 13px; line-height: 1.8; margin-bottom: 16px;">
+              <div><strong>Buffalo_L (YuNet + SFace / SCRFD):</strong> <span id="model-buffalo-status" class="badge badge-present">Installed & Verified</span></div>
+              <div style="color: var(--grey); margin-top: 4px;">Primary institutional face detection and 512-D embedding model.</div>
+            </div>
+            <div style="border-top: 1px solid var(--border); padding-top: 12px; font-size: 12px; color: var(--grey);">
+              <strong>Licence Note:</strong> The face-model weights are published by the InsightFace project for academic research and non-commercial institutional use.
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: HELP ================= -->
+        <section id="view-help" class="page-view" style="display: none;">
+          <div class="card">
+            <h2 class="card-title">Upasthiti User Guide</h2>
+            <div style="font-size: 13px; line-height: 1.8; color: var(--text);">
+              <p><strong>1. Recommended Classroom Photo Technique:</strong> For classes larger than 30 students, capture 2 to 3 photos covering Left, Centre, and Right zones. Good lighting and minimal motion blur significantly enhance detection.</p>
+              <p style="margin-top: 8px;"><strong>2. Keyboard Navigation in Attendance Review:</strong> Use <kbd>↑</kbd> and <kbd>↓</kbd> arrows to select students, <kbd>Space</kbd> to toggle Present/Absent, and <kbd>Enter</kbd> to cycle status.</p>
+              <p style="margin-top: 8px;"><strong>3. Mobile Smart Capture:</strong> Scan the QR code with any smartphone on the network to upload classroom photos directly without cables.</p>
+            </div>
+          </div>
+        </section>
+
+
+        <!-- ================= PAGE: STUDENT PORTAL ================= -->
+        <section id="view-student-portal" class="page-view" style="display: none;">
+          <div class="card">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <h2 class="card-title" id="student-portal-greeting">Welcome, Student</h2>
+                <div class="card-subtitle" id="student-portal-sub">ID: - | Class: -</div>
+              </div>
+              <div class="stat-val" id="student-portal-pct" style="color: var(--green);">0%</div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <div class="card">
+              <h2 class="card-title">Recovery & Goal Advice</h2>
+              <div id="student-portal-guidance" style="font-size: 13px; line-height: 1.8;">
+                Loading attendance statistics...
+              </div>
+            </div>
+
+            <div class="card">
+              <h2 class="card-title">Subject Breakdown</h2>
+              <div class="table-wrapper">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th>Attended</th>
+                      <th>Absent</th>
+                      <th>Rate</th>
+                    </tr>
+                  </thead>
+                  <tbody id="student-portal-subjects-tbody">
+                    <tr><td colspan="4" style="text-align: center; color: var(--grey);">No records found.</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2 class="card-title">My Attendance History</h2>
+            <div class="table-wrapper" style="max-height: 360px;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="student-portal-history-tbody">
+                  <tr><td colspan="5" style="text-align: center; color: var(--grey);">No records found.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+      </main>
+    </div>
+  </div>
+
+
+  <!-- ================= MODALS ================= -->
+
+  <!-- Attendance Review Modal -->
+  <div id="modal-attendance-review" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 780px;">
+      <div class="modal-header">
+        <h2 class="modal-title" id="review-modal-summary">Review & Save Attendance</h2>
+        <button class="logout-link" onclick="closeModal('modal-attendance-review')">✕</button>
       </div>
-    </section>
+      <div class="modal-body" id="review-modal-body">
+        <!-- Rendered by JS -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-attendance-review')">Cancel</button>
+        <button id="btn-save-final-attendance" class="btn btn-success">💾 Save Attendance</button>
+      </div>
+    </div>
+  </div>
 
-  </main>
+  <!-- QR Phone Upload Modal -->
+  <div id="modal-phone-qr" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px; text-align: center;">
+      <div class="modal-header">
+        <h2 class="modal-title">Upload from Phone</h2>
+        <button class="logout-link" onclick="closeModal('modal-phone-qr')">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size: 13px; color: var(--grey); margin-bottom: 14px;">
+          Scan this QR code with your phone camera to take or select classroom photos.
+        </p>
+        <img id="qr-code-img" style="width: 220px; height: 220px; border-radius: var(--radius-sm); border: 1px solid var(--border);" alt="Upload QR Code">
+        <div id="qr-session-url" style="font-size: 11px; color: var(--grey); margin-top: 8px; word-break: break-all;"></div>
+        <div id="qr-session-status" style="margin-top: 14px; font-weight: 600; color: var(--blue);">Waiting for phone to connect...</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-phone-qr')">Close</button>
+        <button id="btn-finish-phone-session" class="btn btn-success">Finish & Review on Web</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- New Class Modal -->
+  <div id="modal-new-class" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 440px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Create New Class</h2>
+        <button class="logout-link" onclick="closeModal('modal-new-class')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label" for="new-class-name">Class Name *</label>
+          <input type="text" id="new-class-name" class="form-control" placeholder="e.g. ME 3rd Sem A">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-new-class')">Cancel</button>
+        <button id="btn-submit-new-class" class="btn btn-primary">Create Class</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Student Discrepancy Review Request Modal -->
+  <div id="modal-submit-review" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 480px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Report Attendance Discrepancy</h2>
+        <button class="logout-link" onclick="closeModal('modal-submit-review')">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="review-session-id">
+        <div class="form-group">
+          <label class="form-label">Reason *</label>
+          <select id="review-reason-select" class="form-control">
+            <option value="I was present">I was present</option>
+            <option value="Wrong attendance status">Wrong attendance status</option>
+            <option value="Recognition mismatch">Recognition mismatch</option>
+            <option value="Wrong class/subject">Wrong class/subject</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Explanation (Optional)</label>
+          <textarea id="review-explanation-text" class="form-control" rows="3" placeholder="Provide any additional details..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-submit-review')">Cancel</button>
+        <button id="btn-submit-review-claim" class="btn btn-primary">Submit Request</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Email Preview Modal -->
+  <div id="modal-email-preview" class="modal-overlay" style="display: none;">
+    <div class="modal-card" style="max-width: 600px;">
+      <div class="modal-header">
+        <h2 class="modal-title">Personalized Email Preview</h2>
+        <button class="logout-link" onclick="closeModal('modal-email-preview')">✕</button>
+      </div>
+      <div class="modal-body">
+        <div id="email-preview-subject" style="font-weight: 700; margin-bottom: 8px;"></div>
+        <pre id="email-preview-body" style="font-family: inherit; font-size: 13px; background: #F8FAFC; padding: 12px; border-radius: var(--radius-sm); border: 1px solid var(--border); white-space: pre-wrap;"></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeModal('modal-email-preview')">Close</button>
+      </div>
+    </div>
+  </div>
 
   <script src="/static/js/app.js"></script>
 </body>
