@@ -1,0 +1,17 @@
+numpy>=1.26
+opencv-python>=4.9
+scipy>=1.11
+onnxruntime>=1.17
+insightface==2.0
+pillow>=10.0
+customtkinter>=5.2
+python-docx>=1.1
+openpyxl>=3.1
+cryptography>=42.0
+winotify>=1.1; sys_platform == "win32"
+
+# Optional - only needed if you enable the DeepFace models in "Models & Licences"
+# (free for commercial use, but lower accuracy than the InsightFace models).
+# Install separately with: venv\Scripts\python.exe -m pip install deepface tf-keras
+# deepface
+# tf-keras
