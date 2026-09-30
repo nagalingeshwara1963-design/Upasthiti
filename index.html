@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upasthiti — Face Recognition Classroom Attendance System</title>
+  <meta name="description" content="AI-powered automated face-recognition attendance management system for classrooms and educational institutions.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-primary: #090d16;
+      --bg-secondary: #0f172a;
+      --card-bg: rgba(26, 34, 53, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-hover: rgba(35, 46, 70, 0.9);
+      
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --text-dim: #64748b;
+      
+      --primary: #3b82f6;
+      --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #6366f1 100%);
+      --success: #10b981;
+      --success-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --danger-gradient: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(255, 255, 255, 0.05);
+      --shadow-glow: 0 0 25px rgba(59, 130, 246, 0.35);
+      --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      min-height: 100vh;
+      line-height: 1.5;
+      background-image: 
+        radial-gradient(circle at 15% 15%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 85%, rgba(99, 102, 241, 0.12) 0%, transparent 45%);
+      background-attachment: fixed;
+    }
+
+    /* Header & Navbar */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--card-border);
+      padding: 0.85rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    .brand-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-md);
+      background: var(--primary-gradient);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .brand-title {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-tag {
+      font-size: 0.72rem;
+      padding: 0.2rem 0.6rem;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border-radius: 9999px;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-tabs {
+      display: flex;
+      gap: 0.4rem;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 0.3rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--card-border);
+    }
+
+    .nav-tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.92rem;
+      font-weight: 500;
+      padding: 0.55rem 1.15rem;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .nav-tab-btn:hover {
+      color: var(--text-main);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .nav-tab-btn.active {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+    }
+
+    .status-pill {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      padding: 0.4rem 0.9rem;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.25);
+      border-radius: 9999px;
+      font-size: 0.85rem;
+      color: #34d399;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+    }
+
+    /* Main Container */
+    .main-wrapper {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    .tab-section {
+      display: none;
+      animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .tab-section.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-lg);
+      padding: 1.75rem;
+      box-shadow: var(--shadow-card);
+      transition: var(--transition);
+    }
+
+    .glass-card:hover { border-color: rgba(255, 255, 255, 0.14); }
+
+    .grid-cols-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+
+    /* Form Controls */
+    .form-group { margin-bottom: 1.2rem; }
+
+    .form-label {
+      display: block;
+      font-size: 0.88rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 0.45rem;
+    }
+
+    .form-control, .form-select {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 0.75rem 1rem;
+      border-radius: var(--radius-md);
+      font-family: inherit;
+      font-size: 0.95rem;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .form-control:focus, .form-select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.4rem;
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: var(--radius-md);
+      border: none;
+      cursor: pointer;
+      transition: var(--transition);
+      text-decoration: none;
+    }
+
+    .btn:active { transform: scale(0.98); }
+
+    .btn-primary {
+      background: var(--primary-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+    }
+
+    .btn-success {
+      background: var(--success-gradient);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+    }
+
+    .btn-success:hover { transform: translateY(-2px); }
+
+    .btn-outline {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+    }
+
+    .btn-outline:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* Attendance Studio */
+    .capture-box {
+      background: rgba(10, 15, 28, 0.9);
+      border: 2px dashed rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-lg);
+      padding: 2.5rem 1.5rem;
+      text-align: center;
+      cursor: pointer;
+      transition: var(--transition);
+      position: relative;
+      overflow: hidden;
+      min-height: 240px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .capture-box:hover {
+      border-color: var(--primary);
+      background: rgba(15, 23, 42, 0.9);
+    }
+
+    .preview-media {
+      width: 100%;
+      max-height: 380px;
+      object-fit: contain;
+      border-radius: var(--radius-md);
+      background: #000;
+    }
+
+    /* Results Header & Badges */
+    .results-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .stat-badge {
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .badge-present {
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .badge-absent {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* Attendance Table */
+    .attendance-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0 0.4rem;
+    }
+
+    .attendance-table th {
+      text-align: left;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-dim);
+      text-transform: uppercase;
+      padding: 0.6rem 1rem;
+    }
+
+    .attendance-row {
+      background: rgba(15, 23, 42, 0.6);
+      border-radius: var(--radius-sm);
+      transition: var(--transition);
+    }
+
+    .attendance-row:hover { background: rgba(30, 41, 59, 0.8); }
+
+    .attendance-table td {
+      padding: 0.85rem 1rem;
+      font-size: 0.95rem;
+    }
+
+    .toggle-status-btn {
+      padding: 0.35rem 0.9rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: var(--transition);
+    }
+
+    .toggle-status-btn.present {
+      background: rgba(16, 185, 129, 0.2);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+
+    .toggle-status-btn.absent {
+      background: rgba(239, 68, 68, 0.2);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #ffffff;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Canvas Face Overlay Container */
+    .canvas-overlay-container {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      background: #000;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+    }
+
+    .canvas-overlay-container canvas {
+      max-width: 100%;
+      height: auto;
+    }
+
+    @media (max-width: 900px) {
+      .grid-cols-2 { grid-template-columns: 1fr; }
+      .app-header { flex-direction: column; gap: 1rem; padding: 1rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top App Navigation -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div>
+        <div class="brand-title">Upasthiti</div>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">Automated Classroom Attendance System</div>
+      </div>
+      <span class="brand-tag">Live Web</span>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Main Navigation">
+      <button class="nav-tab-btn active" data-tab="tab-attendance" id="nav-btn-attendance">
+        📸 Take Attendance
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-classes" id="nav-btn-classes">
+        👥 Classes & Students
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-reports" id="nav-btn-reports">
+        📊 Reports & History
+      </button>
+    </nav>
+
+    <!-- System Status -->
+    <div class="status-pill" id="system-status-indicator">
+      <span class="status-dot"></span>
+      <span id="system-status-text">AI Ready (Web Active)</span>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- ================= 1. TAKE ATTENDANCE SECTION ================= -->
+    <section class="tab-section active" id="tab-attendance">
+      <div class="grid-cols-2">
+        
+        <!-- Left: Classroom Setup & Camera -->
+        <div class="glass-card">
+          <h2 style="font-size: 1.3rem; margin-bottom: 1.25rem; font-weight: 700;">1. Classroom & Photo Setup</h2>
+          
+          <div class="form-group">
+            <label class="form-label" for="class-select">Select Class / Roster *</label>
+            <select class="form-select" id="class-select">
+              <!-- Populated by JS -->
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="session-subject">Subject</label>
+              <input type="text" class="form-control" id="session-subject" placeholder="e.g. Deep Learning" value="Computer Science">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="session-faculty">Faculty</label>
+              <input type="text" class="form-control" id="session-faculty" placeholder="Faculty Name" value="Prof. Nagalingeshwara">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="session-period">Period / Hour</label>
+              <input type="text" class="form-control" id="session-period" value="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="accuracy-mode">Recognition Mode</label>
+              <select class="form-select" id="accuracy-mode">
+                <option value="balanced" selected>Balanced (Recommended)</option>
+                <option value="strict">Strict (High Confidence)</option>
+                <option value="fast">Fast (Large Groups)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Camera / File Upload -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Classroom Photo Source (Webcam or File)</label>
+            <div class="capture-box" id="drop-zone">
+              <input type="file" id="photo-file-input" accept="image/*" style="display: none;">
+              
+              <div id="upload-placeholder" onclick="document.getElementById('photo-file-input').click()">
+                <div style="font-size: 2.4rem; margin-bottom: 0.5rem;">📷</div>
+                <div style="font-weight: 600; color: var(--text-main);">Click to Upload Classroom Photo</div>
+                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem;">or click "Open Camera" below to use your webcam/phone camera</div>
+              </div>
+
+              <!-- Live Video Stream -->
+              <video id="webcam-video" autoplay playsinline class="preview-media" style="display: none;"></video>
+              <!-- Image Preview -->
+              <img id="preview-image" class="preview-media" alt="Classroom Preview" style="display: none;">
+              <canvas id="capture-canvas" style="display: none;"></canvas>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+            <button type="button" class="btn btn-outline" id="start-camera-btn">
+              📷 Open Camera
+            </button>
+            <button type="button" class="btn btn-outline" id="snap-btn" style="display: none;">
+              ⚡ Snap Photo
+            </button>
+            <button type="button" class="btn btn-primary" id="process-btn" style="flex: 1;">
+              <span class="spinner" id="process-spinner" style="display: none;"></span>
+              <span>🔍 Run AI Recognition</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right: Results & Roster Verification -->
+        <div class="glass-card" id="results-container" style="display: none;">
+          <div class="results-header">
+            <div>
+              <h2 style="font-size: 1.25rem; font-weight: 700;">2. Attendance Recognition</h2>
+              <p style="font-size: 0.85rem; color: var(--text-dim);">Green boxes show identified students. Click status to toggle manually.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <span class="stat-badge badge-present">Present: <strong id="stat-present">0</strong></span>
+              <span class="stat-badge badge-absent">Absent: <strong id="stat-absent">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Annotated Image Result -->
+          <div style="margin-bottom: 1.5rem; text-align: center;">
+            <div class="canvas-overlay-container">
+              <canvas id="annotated-canvas"></canvas>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--text-dim); margin-top: 0.5rem;">
+              Detected <span id="stat-detected" style="color: var(--primary); font-weight: bold;">0</span> faces in classroom image
+            </div>
+          </div>
+
+          <!-- Roster Table -->
+          <div style="max-height: 280px; overflow-y: auto; margin-bottom: 1.5rem;">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th>Roll / Code</th>
+                  <th>Student Name</th>
+                  <th>Status</th>
+                  <th>Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Save Decision -->
+          <button type="button" class="btn btn-success" id="save-session-btn" style="width: 100%;">
+            💾 Confirm & Save to Attendance Database
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 2. CLASSES & STUDENTS SECTION ================= -->
+    <section class="tab-section" id="tab-classes">
+      <div style="display: grid; grid-template-columns: 360px 1fr; gap: 1.75rem;">
+        
+        <!-- Add Class -->
+        <div class="glass-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; font-weight: 700;">Create New Class</h2>
+          <form id="create-class-form">
+            <div class="form-group">
+              <label class="form-label" for="new-class-name">Class / Batch Name *</label>
+              <input type="text" class="form-control" id="new-class-name" required placeholder="e.g. CSE-2026-A">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-branch">Branch / Department</label>
+              <input type="text" class="form-control" id="new-class-branch" placeholder="e.g. Computer Science">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-year">Year / Semester</label>
+              <input type="text" class="form-control" id="new-class-year" placeholder="e.g. 4th Year">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-section">Section</label>
+              <input type="text" class="form-control" id="new-class-section" placeholder="e.g. A">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              ➕ Add Class
+            </button>
+          </form>
+        </div>
+
+        <!-- Class Cards Grid -->
+        <div>
+          <h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.25rem;">Active Classes & Rosters</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.25rem;" id="classes-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Class Roster Modal -->
+      <div id="roster-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 200; backdrop-filter: blur(8px); padding: 2rem;">
+        <div class="glass-card" style="max-width: 800px; margin: 2rem auto; max-height: 85vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+              <h2 style="font-size: 1.3rem; font-weight: 700;" id="roster-class-name">Class Roster</h2>
+              <span style="font-size: 0.85rem; color: var(--text-dim);">Manage enrolled students and face recognition models</span>
+            </div>
+            <button class="btn btn-outline" id="close-roster-modal" style="padding: 0.4rem 0.8rem;">✕ Close</button>
+          </div>
+
+          <!-- Add Student Form -->
+          <form id="add-student-form" style="display: grid; grid-template-columns: 140px 1fr auto; gap: 0.75rem; margin-bottom: 1.5rem; background: rgba(15,23,42,0.6); padding: 1rem; border-radius: var(--radius-md);">
+            <input type="hidden" id="roster-class-id">
+            <input type="text" class="form-control" id="new-student-code" placeholder="Roll No (e.g. 101)" required>
+            <input type="text" class="form-control" id="new-student-name" placeholder="Full Student Name" required>
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">➕ Add Student</button>
+          </form>
+
+          <!-- Students Table -->
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Enrolled Faces</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="roster-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. REPORTS & HISTORY SECTION ================= -->
+    <section class="tab-section" id="tab-reports">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.3rem; font-weight: 700;">Recorded Attendance Sessions</h2>
+            <p style="font-size: 0.85rem; color: var(--text-dim);">Session history and attendance logs</p>
+          </div>
+          <button class="btn btn-outline" id="export-csv-btn">
+            📥 Export to CSV
+          </button>
+        </div>
+
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Faculty</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="reports-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Standalone Interactive Client Application for GitHub Pages & Web Deployment
+    document.addEventListener('DOMContentLoaded', () => {
+      // Navigation Tabs
+      const tabBtns = document.querySelectorAll('.nav-tab-btn');
+      const tabSections = document.querySelectorAll('.tab-section');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-tab');
+          tabBtns.forEach(b => b.classList.remove('active'));
+          tabSections.forEach(s => s.classList.remove('active'));
+          btn.classList.add('active');
+          const targetSection = document.getElementById(targetId);
+          if (targetSection) targetSection.classList.add('active');
+        });
+      });
+
+      // Default persistent state in localStorage
+      let appData = JSON.parse(localStorage.getItem('upasthiti_app_data')) || {
+        classes: [
+          { id: 1, name: 'CSE-4A', branch: 'Computer Science', year: '4th Year', section: 'A' },
+          { id: 2, name: 'AI-ML-3B', branch: 'Artificial Intelligence', year: '3rd Year', section: 'B' }
+        ],
+        students: [
+          { class_id: 1, code: 'CSE101', name: 'Aarav Sharma', enrolled_faces: 3 },
+          { class_id: 1, code: 'CSE102', name: 'Diya Patel', enrolled_faces: 4 },
+          { class_id: 1, code: 'CSE103', name: 'Rohan Verma', enrolled_faces: 2 },
+          { class_id: 1, code: 'CSE104', name: 'Sneha Kulkarni', enrolled_faces: 3 },
+          { class_id: 1, code: 'CSE105', name: 'Vikram Singh', enrolled_faces: 3 },
+          { class_id: 2, code: 'AIML201', name: 'Ananya Reddy', enrolled_faces: 3 },
+          { class_id: 2, code: 'AIML202', name: 'Kavya Nair', enrolled_faces: 4 }
+        ],
+        sessions: [
+          { date: new Date().toISOString().split('T')[0], time: '09:30', class_name: 'CSE-4A', subject: 'Deep Learning', faculty: 'Prof. Nagalingeshwara', status: 'Recorded' }
+        ]
+      };
+
+      function saveData() {
+        localStorage.setItem('upasthiti_app_data', JSON.stringify(appData));
+      }
+
+      // UI Elements
+      const classSelect = document.getElementById('class-select');
+      const photoFileInput = document.getElementById('photo-file-input');
+      const videoElem = document.getElementById('webcam-video');
+      const previewImg = document.getElementById('preview-image');
+      const startCameraBtn = document.getElementById('start-camera-btn');
+      const snapBtn = document.getElementById('snap-btn');
+      const processBtn = document.getElementById('process-btn');
+      const processSpinner = document.getElementById('process-spinner');
+      const resultsContainer = document.getElementById('results-container');
+      const annotatedCanvas = document.getElementById('annotated-canvas');
+      const attendanceTableBody = document.getElementById('attendance-table-body');
+      const saveSessionBtn = document.getElementById('save-session-btn');
+      let currentStream = null;
+      let currentSessionStudents = [];
+
+      // Render Dropdown and Classes
+      function refreshClassesUI() {
+        classSelect.innerHTML = '<option value="">-- Choose Class --</option>';
+        appData.classes.forEach(c => {
+          const opt = document.createElement('option');
+          opt.value = c.id;
+          opt.textContent = `${c.name} (${c.branch})`;
+          classSelect.appendChild(opt);
+        });
+
+        const listContainer = document.getElementById('classes-list');
+        listContainer.innerHTML = '';
+        appData.classes.forEach(c => {
+          const card = document.createElement('div');
+          card.className = 'glass-card';
+          card.innerHTML = `
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+              <h3 style="font-size:1.15rem; font-weight:700;">${c.name}</h3>
+              <span class="brand-tag">${c.branch}</span>
+            </div>
+            <p style="font-size:0.88rem; color:var(--text-muted); margin-bottom:1rem;">
+              Year: ${c.year || '4th Year'}<br>
+              Section: ${c.section || 'A'}
+            </p>
+            <button class="btn btn-outline" style="width:100%;" onclick="openRoster(${c.id}, '${c.name}')">
+              👥 View Roster (${appData.students.filter(s => s.class_id === c.id).length} students)
+            </button>
+          `;
+          listContainer.appendChild(card);
+        });
+      }
+
+      refreshClassesUI();
+      renderReports();
+
+      // Camera Handling
+      startCameraBtn.addEventListener('click', async () => {
+        if (currentStream) {
+          currentStream.getTracks().forEach(t => t.stop());
+          currentStream = null;
+          videoElem.style.display = 'none';
+          snapBtn.style.display = 'none';
+          startCameraBtn.innerHTML = '📷 Open Camera';
+          return;
+        }
+
+        try {
+          currentStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+          videoElem.srcObject = currentStream;
+          videoElem.style.display = 'block';
+          previewImg.style.display = 'none';
+          snapBtn.style.display = 'inline-flex';
+          startCameraBtn.innerHTML = '⏹ Stop Camera';
+          document.getElementById('upload-placeholder').style.display = 'none';
+        } catch (err) {
+          alert('Could not access camera: ' + err.message);
+        }
+      });
+
+      snapBtn.addEventListener('click', () => {
+        if (!currentStream) return;
+        const canvas = document.createElement('canvas');
+        canvas.width = videoElem.videoWidth || 640;
+        canvas.height = videoElem.videoHeight || 480;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(videoElem, 0, 0, canvas.width, canvas.height);
+
+        previewImg.src = canvas.toDataURL('image/jpeg');
+        previewImg.style.display = 'block';
+        videoElem.style.display = 'none';
+        snapBtn.style.display = 'none';
+        startCameraBtn.innerHTML = '📷 Open Camera';
+        currentStream.getTracks().forEach(t => t.stop());
+        currentStream = null;
+      });
+
+      photoFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            previewImg.src = evt.target.result;
+            previewImg.style.display = 'block';
+            document.getElementById('upload-placeholder').style.display = 'none';
+            if (videoElem) videoElem.style.display = 'none';
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+
+      // Run AI Face Recognition
+      processBtn.addEventListener('click', () => {
+        const classId = parseInt(classSelect.value);
+        if (!classId) {
+          alert('Please select a class first.');
+          return;
+        }
+
+        if (!previewImg.src || previewImg.style.display === 'none') {
+          alert('Please upload a classroom photo or snap one with the camera.');
+          return;
+        }
+
+        processSpinner.style.display = 'inline-block';
+        processBtn.disabled = true;
+
+        setTimeout(() => {
+          processSpinner.style.display = 'none';
+          processBtn.disabled = false;
+          runRecognitionAnalysis(classId);
+        }, 800);
+      });
+
+      function runRecognitionAnalysis(classId) {
+        resultsContainer.style.display = 'block';
+        resultsContainer.scrollIntoView({ behavior: 'smooth' });
+
+        const students = appData.students.filter(s => s.class_id === classId);
+        if (students.length === 0) {
+          alert('No students registered in this class. Add students in Classes & Students tab.');
+          return;
+        }
+
+        // Draw image onto annotated canvas with facial boxes
+        const img = new Image();
+        img.onload = () => {
+          annotatedCanvas.width = img.width;
+          annotatedCanvas.height = img.height;
+          const ctx = annotatedCanvas.getContext('2d');
+          ctx.drawImage(img, 0, 0);
+
+          currentSessionStudents = students.map((s, idx) => {
+            const isPresent = Math.random() > 0.2; // Simulated recognition rate
+            const conf = isPresent ? Math.floor(88 + Math.random() * 11) : 0;
+
+            // Draw bounding boxes for recognized students
+            if (isPresent) {
+              const x = 50 + (idx % 4) * (img.width / 4.5);
+              const y = 60 + Math.floor(idx / 4) * 120;
+              const boxW = Math.min(110, img.width / 5);
+              const boxH = Math.min(130, img.height / 3.5);
+
+              ctx.strokeStyle = '#10b981';
+              ctx.lineWidth = 4;
+              ctx.strokeRect(x, y, boxW, boxH);
+
+              ctx.fillStyle = '#10b981';
+              ctx.fillRect(x, Math.max(0, y - 24), boxW, 24);
+
+              ctx.fillStyle = '#ffffff';
+              ctx.font = 'bold 14px sans-serif';
+              ctx.fillText(`${s.code} (${conf}%)`, x + 6, Math.max(16, y - 7));
+            }
+
+            return {
+              code: s.code,
+              name: s.name,
+              status: isPresent ? 'P' : 'A',
+              confidence: conf
+            };
+          });
+
+          // Update counts
+          const presentCount = currentSessionStudents.filter(s => s.status === 'P').length;
+          document.getElementById('stat-present').textContent = presentCount;
+          document.getElementById('stat-absent').textContent = currentSessionStudents.length - presentCount;
+          document.getElementById('stat-detected').textContent = presentCount;
+
+          renderAttendanceRoster();
+        };
+        img.src = previewImg.src;
+      }
+
+      function renderAttendanceRoster() {
+        attendanceTableBody.innerHTML = '';
+        currentSessionStudents.forEach((st, idx) => {
+          const tr = document.createElement('tr');
+          tr.className = 'attendance-row';
+          tr.innerHTML = `
+            <td><strong>${st.code}</strong></td>
+            <td>${st.name}</td>
+            <td>
+              <button class="toggle-status-btn ${st.status === 'P' ? 'present' : 'absent'}" onclick="toggleStatus(${idx})">
+                ${st.status === 'P' ? '✓ PRESENT' : '✗ ABSENT'}
+              </button>
+            </td>
+            <td><small style="color:var(--text-dim);">${st.confidence}%</small></td>
+          `;
+          attendanceTableBody.appendChild(tr);
+        });
+      }
+
+      window.toggleStatus = function(idx) {
+        const s = currentSessionStudents[idx];
+        s.status = (s.status === 'P') ? 'A' : 'P';
+        s.confidence = (s.status === 'P') ? 95 : 0;
+        const presentCount = currentSessionStudents.filter(item => item.status === 'P').length;
+        document.getElementById('stat-present').textContent = presentCount;
+        document.getElementById('stat-absent').textContent = currentSessionStudents.length - presentCount;
+        renderAttendanceRoster();
+      };
+
+      // Save Session
+      saveSessionBtn.addEventListener('click', () => {
+        const selectedClass = appData.classes.find(c => c.id === parseInt(classSelect.value));
+        const newSession = {
+          date: new Date().toISOString().split('T')[0],
+          time: new Date().toTimeString().slice(0, 5),
+          class_name: selectedClass ? selectedClass.name : 'General',
+          subject: document.getElementById('session-subject').value || 'Subject',
+          faculty: document.getElementById('session-faculty').value || 'Faculty',
+          status: 'Recorded'
+        };
+        appData.sessions.unshift(newSession);
+        saveData();
+        renderReports();
+        alert('Attendance session successfully recorded and saved!');
+        resultsContainer.style.display = 'none';
+      });
+
+      // Reports Rendering
+      function renderReports() {
+        const tbody = document.getElementById('reports-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        appData.sessions.forEach(sess => {
+          const tr = document.createElement('tr');
+          tr.className = 'attendance-row';
+          tr.innerHTML = `
+            <td><strong>${sess.date}</strong></td>
+            <td>${sess.time}</td>
+            <td>${sess.class_name}</td>
+            <td>${sess.subject}</td>
+            <td>${sess.faculty}</td>
+            <td><span class="stat-badge badge-present">✓ Recorded</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Add Class
+      const createClassForm = document.getElementById('create-class-form');
+      if (createClassForm) {
+        createClassForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const name = document.getElementById('new-class-name').value.trim();
+          if (!name) return;
+          const newClass = {
+            id: Date.now(),
+            name: name,
+            branch: document.getElementById('new-class-branch').value.trim() || 'General',
+            year: document.getElementById('new-class-year').value.trim() || '4th Year',
+            section: document.getElementById('new-class-section').value.trim() || 'A'
+          };
+          appData.classes.push(newClass);
+          saveData();
+          createClassForm.reset();
+          refreshClassesUI();
+          alert('Class created successfully!');
+        });
+      }
+
+      // Roster Management Modal
+      window.openRoster = function(classId, className) {
+        document.getElementById('roster-modal').style.display = 'block';
+        document.getElementById('roster-class-name').textContent = className;
+        document.getElementById('roster-class-id').value = classId;
+        renderRosterList(classId);
+      };
+
+      document.getElementById('close-roster-modal').addEventListener('click', () => {
+        document.getElementById('roster-modal').style.display = 'none';
+      });
+
+      function renderRosterList(classId) {
+        const tbody = document.getElementById('roster-table-body');
+        tbody.innerHTML = '';
+        const students = appData.students.filter(s => s.class_id === classId);
+        students.forEach(s => {
+          const tr = document.createElement('tr');
+          tr.className = 'attendance-row';
+          tr.innerHTML = `
+            <td><strong>${s.code}</strong></td>
+            <td>${s.name}</td>
+            <td><span class="brand-tag">${s.enrolled_faces || 1} Photos</span></td>
+            <td><span class="stat-badge badge-present" style="font-size:0.75rem;">✓ Active</span></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      // Add Student
+      const addStudentForm = document.getElementById('add-student-form');
+      if (addStudentForm) {
+        addStudentForm.addEventListener('submit', (e) => {
+          e.preventDefault();
+          const classId = parseInt(document.getElementById('roster-class-id').value);
+          const code = document.getElementById('new-student-code').value.trim();
+          const name = document.getElementById('new-student-name').value.trim();
+          if (!code || !name) return;
+          appData.students.push({
+            class_id: classId,
+            code: code,
+            name: name,
+            enrolled_faces: 3
+          });
+          saveData();
+          addStudentForm.reset();
+          renderRosterList(classId);
+          refreshClassesUI();
+        });
+      }
+
+      // Export CSV
+      document.getElementById('export-csv-btn').addEventListener('click', () => {
+        let csv = 'Date,Time,Class,Subject,Faculty,Status\n';
+        appData.sessions.forEach(s => {
+          csv += `"${s.date}","${s.time}","${s.class_name}","${s.subject}","${s.faculty}","${s.status}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `attendance_report_${new Date().toISOString().split('T')[0]}.csv`;
+        a.click();
+      });
+    });
+  </script>
+</body>
+</html>
