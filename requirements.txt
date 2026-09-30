@@ -9,6 +9,9 @@ python-docx>=1.1
 openpyxl>=3.1
 cryptography>=42.0
 winotify>=1.1; sys_platform == "win32"
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.6
 
 # Optional - only needed if you enable the DeepFace models in "Models & Licences"
 # (free for commercial use, but lower accuracy than the InsightFace models).

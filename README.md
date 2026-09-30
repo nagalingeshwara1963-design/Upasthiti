@@ -27,11 +27,16 @@ Upasthiti is a Windows desktop application for managing classroom attendance usi
    ```
 2. Run setup:
    - Double-click `Setup_Upasthiti.bat` to create the virtual environment, install requirements, and download required recognition models.
-3. Launch the application:
-   - Double-click `Start_Upasthiti.bat` to start the app.
-   - For diagnostics, use `Start_Upasthiti_debug.bat`.
+### Launching Options
+
+- **Desktop Edition**: Double-click `Start_Upasthiti.bat` (native Windows GUI)
+- **Web Edition**: Double-click `Start_Web_Upasthiti.bat` (opens modern browser interface at `http://localhost:8000`)
+- **Cloud Deployment**: See [README_DEPLOY_WEB.md](README_DEPLOY_WEB.md) for 1-click free deployment to Render.com or Hugging Face Spaces.
 
 ## Architecture
+
+- `app/web/`: FastAPI web server, REST endpoints, and modern web interface
+- `app/launch.py`: Desktop startup harness and error reporter
 
 - `app/launch.py`: Startup harness and error reporter
 - `app/ui/`: CustomTkinter user interface components

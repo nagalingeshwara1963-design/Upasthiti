@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upasthiti — Face Recognition Attendance System</title>
+  <meta name="description" content="AI-powered automated face-recognition attendance management system for classrooms and educational institutions.">
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-icon">🎓</div>
+      <div>
+        <div class="brand-title">Upasthiti</div>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">Automated Classroom Attendance</div>
+      </div>
+      <span class="brand-tag">Online Web Edition</span>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" aria-label="Main Navigation">
+      <button class="nav-tab-btn active" data-tab="tab-attendance" id="nav-btn-attendance">
+        📸 Take Attendance
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-classes" id="nav-btn-classes">
+        👥 Classes & Students
+      </button>
+      <button class="nav-tab-btn" data-tab="tab-reports" id="nav-btn-reports">
+        📊 Reports & History
+      </button>
+    </nav>
+
+    <!-- System Status Indicator -->
+    <div class="status-pill" id="system-status-indicator">
+      <span class="status-dot"></span>
+      <span id="system-status-text">AI Ready</span>
+    </div>
+  </header>
+
+  <!-- Main Content Wrapper -->
+  <main class="main-wrapper">
+
+    <!-- ================= 1. TAKE ATTENDANCE SECTION ================= -->
+    <section class="tab-section active" id="tab-attendance">
+      <div class="grid-cols-2">
+        
+        <!-- Left Column: Session Configuration & Capture -->
+        <div class="glass-card">
+          <h2 style="font-size: 1.3rem; margin-bottom: 1.25rem; font-weight: 700;">1. Classroom & Photo Setup</h2>
+          
+          <div class="form-group">
+            <label class="form-label" for="class-select">Select Class / Roster *</label>
+            <select class="form-select" id="class-select">
+              <option value="">-- Loading Classes... --</option>
+            </select>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="session-subject">Subject</label>
+              <input type="text" class="form-control" id="session-subject" placeholder="e.g. Machine Learning" value="General">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="session-faculty">Faculty Name</label>
+              <input type="text" class="form-control" id="session-faculty" placeholder="e.g. Prof. Rao" value="Faculty">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label" for="session-period">Period / Hour</label>
+              <input type="text" class="form-control" id="session-period" value="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="accuracy-mode">Recognition Accuracy</label>
+              <select class="form-select" id="accuracy-mode">
+                <option value="balanced" selected>Balanced (Recommended)</option>
+                <option value="strict">Strict (High Confidence)</option>
+                <option value="fast">Fast (Large Classrooms)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Camera / Photo Upload Zone -->
+          <div class="form-group" style="margin-top: 1rem;">
+            <label class="form-label">Classroom Photo Source</label>
+            <div class="capture-box" id="drop-zone" onclick="document.getElementById('photo-file-input').click()">
+              <input type="file" id="photo-file-input" accept="image/*" style="display: none;">
+              
+              <div id="upload-placeholder">
+                <div style="font-size: 2.2rem; margin-bottom: 0.5rem;">📁</div>
+                <div style="font-weight: 600; color: var(--text-main);">Click to Browse or Drag Photo Here</div>
+                <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.3rem;">Supports JPG, PNG, WEBP (from camera or phone)</div>
+              </div>
+
+              <!-- Live Webcam Stream View -->
+              <video id="webcam-video" autoplay playsinline class="preview-media" style="display: none;"></video>
+              <!-- Selected/Snapped Preview -->
+              <img id="preview-image" class="preview-media" alt="Classroom Preview" style="display: none;">
+              <canvas id="capture-canvas" style="display: none;"></canvas>
+            </div>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="display: flex; gap: 0.75rem; margin-top: 1.25rem;">
+            <button type="button" class="btn btn-outline" id="start-camera-btn">
+              📷 Open Camera
+            </button>
+            <button type="button" class="btn btn-outline" id="snap-btn" style="display: none;">
+              ⚡ Snap Photo
+            </button>
+            <button type="button" class="btn btn-primary" id="process-btn" style="flex: 1;">
+              <span class="spinner" id="process-spinner" style="display: none;"></span>
+              <span>🔍 Run AI Recognition</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Right Column: Recognition Preview & Review List -->
+        <div class="glass-card" id="results-container" style="display: none;">
+          <div class="results-header">
+            <div>
+              <h2 style="font-size: 1.25rem; font-weight: 700;">2. Attendance Results</h2>
+              <p style="font-size: 0.85rem; color: var(--text-dim);">Verify detected faces and click status to toggle</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <span class="stat-badge badge-present">Present: <strong id="stat-present">0</strong></span>
+              <span class="stat-badge badge-absent">Absent: <strong id="stat-absent">0</strong></span>
+            </div>
+          </div>
+
+          <!-- Annotated Image with Bounding Boxes -->
+          <div style="margin-bottom: 1.5rem; text-align: center;">
+            <img id="boxed-result-image" class="preview-media" alt="Detected Faces" style="border: 1px solid var(--card-border);">
+            <div style="font-size: 0.8rem; color: var(--text-dim); margin-top: 0.4rem;">
+              Detected <span id="stat-detected" style="color: var(--primary); font-weight: bold;">0</span> faces in group photo
+            </div>
+          </div>
+
+          <!-- Attendance Decision Roster -->
+          <div style="max-height: 280px; overflow-y: auto; margin-bottom: 1.5rem;">
+            <table class="attendance-table">
+              <thead>
+                <tr>
+                  <th>Roll / Code</th>
+                  <th>Student Name</th>
+                  <th>Decision</th>
+                  <th>Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="attendance-table-body">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Save to Database Button -->
+          <button type="button" class="btn btn-success" id="save-session-btn" style="width: 100%;">
+            💾 Confirm & Save to Database
+          </button>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ================= 2. CLASSES & STUDENTS SECTION ================= -->
+    <section class="tab-section" id="tab-classes">
+      <div style="display: grid; grid-template-columns: 360px 1fr; gap: 1.75rem;">
+        
+        <!-- Add Class Form -->
+        <div class="glass-card">
+          <h2 style="font-size: 1.25rem; margin-bottom: 1.25rem; font-weight: 700;">Add New Class</h2>
+          <form id="create-class-form">
+            <div class="form-group">
+              <label class="form-label" for="new-class-name">Class / Batch Name *</label>
+              <input type="text" class="form-control" id="new-class-name" required placeholder="e.g. CSE-2026-A">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-branch">Branch / Department</label>
+              <input type="text" class="form-control" id="new-class-branch" placeholder="e.g. Computer Science">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-year">Academic Year</label>
+              <input type="text" class="form-control" id="new-class-year" placeholder="e.g. 4th Year">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-section">Section</label>
+              <input type="text" class="form-control" id="new-class-section" placeholder="e.g. A">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="new-class-college">College / Institution</label>
+              <input type="text" class="form-control" id="new-class-college" placeholder="e.g. Engineering College">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%;">
+              ➕ Create Class
+            </button>
+          </form>
+        </div>
+
+        <!-- Class Cards Grid -->
+        <div>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+            <h2 style="font-size: 1.3rem; font-weight: 700;">Active Classes & Rosters</h2>
+          </div>
+          <div class="grid-cols-2" id="classes-list">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Class Roster Modal -->
+      <div id="roster-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.8); z-index: 200; backdrop-filter: blur(8px); padding: 2rem;">
+        <div class="glass-card" style="max-width: 800px; margin: 2rem auto; max-height: 85vh; overflow-y: auto;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+            <div>
+              <h2 style="font-size: 1.3rem; font-weight: 700;" id="roster-class-name">Class Roster</h2>
+              <span style="font-size: 0.85rem; color: var(--text-dim);">Manage students and upload enrollment face photos</span>
+            </div>
+            <button class="btn btn-outline" id="close-roster-modal" style="padding: 0.4rem 0.8rem;">✕ Close</button>
+          </div>
+
+          <!-- Add Student Inline Form -->
+          <form id="add-student-form" style="display: grid; grid-template-columns: 140px 1fr auto; gap: 0.75rem; margin-bottom: 1.5rem; background: rgba(15,23,42,0.6); padding: 1rem; border-radius: var(--radius-md);">
+            <input type="hidden" id="roster-class-id">
+            <input type="text" class="form-control" id="new-student-code" placeholder="Roll No (e.g. 101)" required>
+            <input type="text" class="form-control" id="new-student-name" placeholder="Full Student Name" required>
+            <button type="submit" class="btn btn-primary" style="white-space: nowrap;">➕ Add Student</button>
+          </form>
+
+          <!-- Student Roster Table -->
+          <table class="attendance-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Name</th>
+                <th>Enrolled Faces</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="roster-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= 3. REPORTS & HISTORY SECTION ================= -->
+    <section class="tab-section" id="tab-reports">
+      <div class="glass-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+          <div>
+            <h2 style="font-size: 1.3rem; font-weight: 700;">Recorded Attendance Sessions</h2>
+            <p style="font-size: 0.85rem; color: var(--text-dim);">Real-time historical session logs stored in local SQLite database</p>
+          </div>
+        </div>
+
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Faculty</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="reports-table-body">
+            <!-- Dynamically populated -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+  </main>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
